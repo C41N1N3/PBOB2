@@ -8,12 +8,9 @@ public class VendingMachine {
 
     public VendingMachine(Bahan stok) {
         this.stok = stok;
-        menu.add(new Menu("Espresso", 10000, 1, 1, 0, 1, 0, 0));
-        menu.add(new Menu("Cappuccino", 15000, 1, 1, 1, 1, 0, 0));
-        menu.add(new Menu("Latte", 20000, 1, 1, 2, 1, 0, 0));
-        menu.add(new Menu("Susu Coklat", 18000, 0, 1, 2, 1, 1, 0));
-        menu.add(new Menu("Dark Coklat", 17000, 0, 1, 0, 1, 2, 0));
-        menu.add(new Menu("Matcha", 16000, 0, 1, 0, 1, 0, 2));
+        menu.add(new Menu("Coca-Cola", 8000));
+        menu.add(new Menu("Sprite", 8000));
+        menu.add(new Menu("Fanta", 8000));
     }
 
     public void tampilkanMenu() {
@@ -34,7 +31,7 @@ public class VendingMachine {
             if (pilihan == 0) break;
             
             if (pilihan == 99) {
-                stok.refill(10, 10, 10, 10, 10, 10);
+                stok.refill(10);
                 System.out.println("Stok berhasil di-refill!");
                 continue;
             }
@@ -45,53 +42,12 @@ public class VendingMachine {
             }
 
             Menu minuman = menu.get(pilihan - 1);
+            int totalHarga = minuman.harga;
 
-            System.out.print("Pilih ukuran (S/M/L): ");
-            String ukuran = sc.nextLine().toUpperCase();
-            
-            int multiplier = 1;
-            switch (ukuran) {
-                case "S": multiplier = 1; break;
-                case "M": multiplier = 2; break;
-                case "L": multiplier = 3; break;
-                default:
-                    System.out.println("Ukuran tidak valid, menggunakan ukuran S.");
-                    ukuran = "S";
-                    multiplier = 1;
+            if (!stok.cekStok(minuman.nama)) {
+                System.out.println("\nStok untuk " + minuman.nama + " habis! Silahkan refill.\n");
+                continue;
             }
-
-            System.out.print("Tambahkan gula? + Rp2000 (Y/N): ");
-            String tambahGula = sc.nextLine().toUpperCase();
-
-            int extraGula = 0;
-            int extraSusu = 0;
-            int hargaGula = 0;
-            int hargaSusu = 0;
-
-            if (tambahGula.equals("Y")) {
-                extraGula = 1;
-                hargaGula = 2000;
-            }
-            
-            boolean bolehTambahSusu = !(minuman.nama.equals("Dark Coklat") || minuman.nama.equals("Matcha"));
-
-            if (bolehTambahSusu) {
-                System.out.print("Tambahkan susu? + Rp3000 (Y/N): ");
-                String tambahSusu = sc.nextLine().toUpperCase();
-                if (tambahSusu.equals("Y")) {
-                    extraSusu = 1;
-                    hargaSusu = 3000;
-                }
-            }
-            
-            int kopiReq = minuman.kopiReq * multiplier;
-            int gulaReq = (minuman.gulaReq * multiplier) + extraGula;
-            int susuReq = (minuman.susuReq * multiplier) + extraSusu;
-            int airReq = minuman.airReq * multiplier;
-            int coklatReq = minuman.coklatReq * multiplier;
-            int matchaReq = minuman.matchaReq * multiplier;
-
-            int totalHarga = (minuman.harga * multiplier) + hargaGula + hargaSusu;
 
             System.out.println("Total harga: Rp" + totalHarga);
             System.out.print("Bayar: Rp");
@@ -103,19 +59,14 @@ public class VendingMachine {
                 continue;
             }
 
-            if (!stok.cekStok(kopiReq, gulaReq, susuReq, airReq, coklatReq, matchaReq)) {
-                System.out.println("\nStok tidak cukup! Silahkan refill.\n");
-                continue;
-            }
-
-            stok.kurangiStok(kopiReq, gulaReq, susuReq, airReq, coklatReq, matchaReq);
-            System.out.println("\nMembuat minuman... Selesai! Silahkan ambil " + minuman.nama + " ukuran " + ukuran);
+            stok.kurangiStok(minuman.nama);
+            System.out.println("\nTransaksi berhasil! Silahkan ambil " + minuman.nama);
             if (bayar > totalHarga) {
                 System.out.println("Kembalian: Rp" + (bayar - totalHarga));
             }
-            
             System.out.println();
-            logTransaksi.add(new Transaksi(minuman.nama, ukuran, totalHarga));
+            
+            logTransaksi.add(new Transaksi(minuman.nama, totalHarga));
         }
         tampilkanLog();
     }
